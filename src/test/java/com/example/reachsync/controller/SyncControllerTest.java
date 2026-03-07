@@ -40,4 +40,60 @@ public class SyncControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestJson)).andExpect(status().isOk());
     }
+
+    @Test
+    void testShouldReturnBadRequestForInvalidRequest() throws Exception {
+        SyncService syncService = Mockito.mock(SyncService.class);
+
+        Mockito.when(syncService.syncRecord(Mockito.any())).thenReturn(new SyncResult(true, "success"));
+
+        SyncController syncController = new SyncController(syncService);
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(syncController).build();
+
+        String requestJson = """
+                {
+                    "crmType": "SALESFORCE",
+                    "operationType": "CREATE",
+                    "internalRecord": {
+                        "idTest": "123",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "email": "john@gmail.com"
+                    }
+                }
+                """;
+
+        mockMvc.perform(post("/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testShouldReturnBadRequestForInvalidOperationType() throws Exception {
+        SyncService syncService = Mockito.mock(SyncService.class);
+
+        Mockito.when(syncService.syncRecord(Mockito.any())).thenReturn(new SyncResult(true, "success"));
+
+        SyncController syncController = new SyncController(syncService);
+
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(syncController).build();
+
+        String requestJson = """
+                {
+                    "crmType": "SALESFORCE",
+                    "operationType": "Test",
+                    "internalRecord": {
+                        "id": "123",
+                        "firstName": "John",
+                        "lastName": "Doe",
+                        "email": "john@gmail.com"
+                    }
+                }
+                """;
+
+        mockMvc.perform(post("/sync")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestJson)).andExpect(status().isBadRequest());
+    }
 }

@@ -6,38 +6,67 @@ import com.example.reachsync.model.OperationType;
 import com.example.reachsync.model.SyncRequest;
 import com.example.reachsync.model.SyncResult;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+import com.example.reachsync.operation.OperationHandler;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.List;
 
 public class SyncWorkerTest {
 
-    private final SyncWorker syncWorker = new SyncWorker();
-
     @Test
     void testShouldProcessSyncRequestSuccessfully() {
-        InternalRecord record = new InternalRecord(
-                "123",
-                "John",
-                "Doe",
-                "john@gmail.com");
+        OperationHandler handler = Mockito.mock(OperationHandler.class);
 
-        SyncRequest request = new SyncRequest(CrmType.SALESFORCE, OperationType.CREATE, record);
+        when(handler.getSupportedOperation()).thenReturn(OperationType.CREATE);
+        when(handler.processRequest(any())).thenReturn(new SyncResult(true, "created"));
 
-        SyncResult result = syncWorker.process(request);
+        SyncWorker worker = new SyncWorker(List.of(handler));
+        SyncRequest request = new SyncRequest(
+                CrmType.SALESFORCE,
+                OperationType.CREATE,
+                new InternalRecord("123", "John", "Doe", "john@gmail.com"));
+
+        SyncResult result = worker.process(request);
 
         assertTrue(result.isSuccess());
-        assertEquals("Record synchronized successfully", result.getMessage());
+        verify(handler, times(1)).processRequest(request);
     }
 
     @Test
     void testShouldHandleNullRecord() {
-        SyncRequest request = new SyncRequest(CrmType.SALESFORCE, OperationType.CREATE, null);
+        OperationHandler handler = Mockito.mock(OperationHandler.class);
 
-        SyncResult result = syncWorker.process(request);
+        when(handler.getSupportedOperation()).thenReturn(null);
+        when(handler.processRequest(any())).thenReturn(new SyncResult(false, "unsupported operation"));
 
-        assertNotNull(result);
+        SyncWorker worker = new SyncWorker(List.of(handler));
+        SyncRequest request = new SyncRequest(
+                CrmType.SALESFORCE,
+                null,
+                new InternalRecord("123", "John", "Doe", "john@gmail.com"));
+
+        SyncResult result = worker.process(request);
+
+        assertFalse(result.isSuccess());
+        verify(handler, times(1)).processRequest(request);
+    }
+
+    @Test
+    void testShouldReturnFailureForUnsupportedOperation() {
+        SyncWorker worker = new SyncWorker(List.of());
+        SyncRequest request = new SyncRequest(
+                CrmType.SALESFORCE,
+                OperationType.CREATE,
+                new InternalRecord("123", "John", "Doe", "john@gmail.com"));
+
+        SyncResult result = worker.process(request);
+
+        assertFalse(result.isSuccess());
     }
 }
