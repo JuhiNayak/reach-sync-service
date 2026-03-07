@@ -1,5 +1,6 @@
 package com.example.reachsync.service;
 
+import com.example.reachsync.exception.OperationNotSupportedException;
 import com.example.reachsync.model.OperationType;
 import com.example.reachsync.model.SyncRequest;
 import com.example.reachsync.model.SyncResult;
@@ -26,7 +27,8 @@ public class SyncWorker {
         OperationHandler handler = handlerMap.get(request.getOperationType());
 
         if (handler == null) {
-            return new SyncResult(false, "Unsupported operation");
+            throw new OperationNotSupportedException(
+                    "Operation not supported: " + request.getOperationType());
         }
 
         System.out.println("Processing sync request for CRM: " + request.getCrmType());

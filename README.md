@@ -48,3 +48,8 @@ Each CRM provider implements a dedicated transformer using the RecordTransformer
   * Although it may cause runtime errors if keys are mis-typed
 * Separate transformer classes per CRM
   * To achieve clear sepration of logic, it causes more classes in the system
+
+### 3. Error Handling
+System uses centralized exception handling through '@RestControllerAdvice'.
+Custom exceptions are thrown when unsupported operation or missing transfromers are detected.
+This approach keeps business logic clean while ensuring consistent API responses.

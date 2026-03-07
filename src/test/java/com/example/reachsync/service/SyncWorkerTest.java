@@ -1,5 +1,6 @@
 package com.example.reachsync.service;
 
+import com.example.reachsync.exception.OperationNotSupportedException;
 import com.example.reachsync.model.CrmType;
 import com.example.reachsync.model.InternalRecord;
 import com.example.reachsync.model.OperationType;
@@ -8,8 +9,11 @@ import com.example.reachsync.model.SyncResult;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import com.example.reachsync.operation.OperationHandler;
 import org.junit.jupiter.api.Test;
@@ -58,15 +62,13 @@ public class SyncWorkerTest {
     }
 
     @Test
-    void testShouldReturnFailureForUnsupportedOperation() {
+    void testShouldThrowExceptionForUnsupportedOperation() {
         SyncWorker worker = new SyncWorker(List.of());
         SyncRequest request = new SyncRequest(
                 CrmType.SALESFORCE,
                 OperationType.CREATE,
                 new InternalRecord("123", "John", "Doe", "john@gmail.com"));
 
-        SyncResult result = worker.process(request);
-
-        assertFalse(result.isSuccess());
+        assertThrows(OperationNotSupportedException.class, () -> worker.process(request));
     }
 }

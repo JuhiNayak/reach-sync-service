@@ -1,5 +1,6 @@
 package com.example.reachsync.transformer;
 
+import com.example.reachsync.exception.TransformerNotFoundException;
 import com.example.reachsync.model.CrmType;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,12 @@ public class TransformerRegistry {
     }
 
     public RecordTransformer getTransformer(CrmType crmType) {
+
+        RecordTransformer transformer = transformerMap.get(crmType);
+        if (transformer == null) {
+            throw new TransformerNotFoundException(
+                    "No transformer found from CRM type: " +  crmType);
+        }
         return transformerMap.get(crmType);
     }
 }
