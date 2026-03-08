@@ -79,3 +79,73 @@ CRM Webhook -> ReverseSync Worker -> ReverseRecordTransformer -> Internal System
 * Reverse transformation layer
   * Payloads are converted into the internla schema using dedicated reverse transformer implementation
   * Additional transformation logic must be maintained for each CRM
+
+## Running the Project
+### Prerequisites
+
+Make sure the following tools are installed:
+
+* Java 21
+* Maven 3.9+
+* Git
+
+### Clone the repo
+* `git clone https://github.com/JuhiNayak/reach-sync-service.git`
+* `cd reach-sync-service`
+
+### Build the Project
+* `mvn clean install`
+
+### Run the application
+Start the spring boot application
+* `mvn spring-boot:run`
+
+### Run unit tests
+* `mvn test`
+
+## API USAGE
+### Outbound Sync(Internal->CRM)
+Send a sync request:
+
+```bash
+curl -X POST http://localhost:8080/sync \
+-H "Content-Type: application/json" \
+-d '{
+  "crmType": "SALESFORCE",
+  "operationType": "CREATE",
+  "record": {
+    "id": "123",
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@example.com"
+  }
+}'
+```
+
+Example Response:
+```bash
+{"success":true,"message":"Record created successfully"}
+```
+
+### Inbound Sync(CRM -> Internal)
+Simulate a webhook event from CRM:
+
+```bash
+curl -X POST http://localhost:8080/crm/webhook \
+-H "Content-Type: application/json" \
+-d '{
+  "crmType": "SALESFORCE",
+  "operationType": "UPDATE",
+  "sourceSystem": "CRM",
+  "payload": {
+    "First_Name__c": "John",
+    "Last_Name__c": "Doe",
+    "Email__c": "john@example.com"
+  }
+}'
+```
+
+Example response:
+```bash
+Webhook processed
+```

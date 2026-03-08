@@ -19,6 +19,6 @@ public class SalesforceReverseRecordTransformer implements ReverseRecordTransfor
                 null,
                 (String) payload.get("First_Name_c"),
                 (String) payload.get("Last_Name_c"),
-                (String) payload.get("email_c"));
+                (String) payload.get("Email_c"));
     }
 }
