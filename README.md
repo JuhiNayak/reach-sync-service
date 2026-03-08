@@ -53,3 +53,29 @@ Each CRM provider implements a dedicated transformer using the RecordTransformer
 System uses centralized exception handling through '@RestControllerAdvice'.
 Custom exceptions are thrown when unsupported operation or missing transfromers are detected.
 This approach keeps business logic clean while ensuring consistent API responses.
+
+### 4. Bi-Directional Synchorization
+System support Bi-Directional Synchorization between internal system and external CRM providers
+
+#### Execution Flow:
+CRM Webhook -> ReverseSync Worker -> ReverseRecordTransformer -> Internal System
+
+#### Responsibilities
+* Recieving change events from external CRM providers via webhook
+* PRocessing CRM events through a dedicated inbound worker pipeline
+* Converting CRM specific payload into internal record model
+
+
+#### Assumptions
+* CRM provider supports webhook-based change notifications
+* Incoming webhook payload contains sufficient information to reconstruct the internal record
+* Internal system is responsble for resolving conflicts between inbound and outbound updates
+* Reverse transformers exist for each supported CRM provider
+
+#### Tadeoffs
+* Separate inbound and outbound pipelines
+  * Maintains separate processing pipelines
+  * Clean separation of responsibilities
+* Reverse transformation layer
+  * Payloads are converted into the internla schema using dedicated reverse transformer implementation
+  * Additional transformation logic must be maintained for each CRM
