@@ -17,7 +17,8 @@ public class SalesforceRecordTransformer implements RecordTransformer {
     @Override
     public Map<String, Object> transformInternalRecord(InternalRecord record) {
         Map<String, Object> payload = new HashMap<>();
-        
+
+        payload.put("id", Integer.parseInt(record.getId()));
         payload.put("First_Name_c", record.getFirstName());
         payload.put("Last_Name_c", record.getLastName());
         payload.put("email_c", record.getEmail());

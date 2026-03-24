@@ -5,6 +5,7 @@ import com.example.reachsync.model.OperationType;
 import com.example.reachsync.model.InternalRecord;
 import com.example.reachsync.model.SyncResult;
 import com.example.reachsync.model.SyncRequest;
+import com.example.reachsync.rateLimiter.RateLimiter;
 import com.example.reachsync.transformer.RecordTransformer;
 import com.example.reachsync.transformer.TransformerRegistry;
 import org.junit.jupiter.api.Test;
@@ -23,14 +24,16 @@ public class CreateOperationHandlerTest {
     void testShouldCreateRecordSuccessfully() {
         TransformerRegistry registry = Mockito.mock(TransformerRegistry.class);
         RecordTransformer transformer = Mockito.mock(RecordTransformer.class);
+        RateLimiter rateLimiter = Mockito.mock(RateLimiter.class);
 
         when(registry.getTransformer(CrmType.SALESFORCE)).thenReturn(transformer);
         when(transformer.transformInternalRecord(any()))
                 .thenReturn(Map.of("email", "john@gmail.com"));
+        when(rateLimiter.allowRequest(any())).thenReturn(true);
 
         InternalRecord internalRecord = new InternalRecord("123", "John", "Doe", "john@gmail.com");
 
-        CreateOperationHandler handler = new CreateOperationHandler(registry);
+        CreateOperationHandler handler = new CreateOperationHandler(registry, rateLimiter);
         SyncRequest request = new SyncRequest(
                 CrmType.SALESFORCE,
                 OperationType.CREATE,
